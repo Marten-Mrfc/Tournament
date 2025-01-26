@@ -1,0 +1,52 @@
+package dev.marten_mrfcyt.tournament.tournaments
+
+import org.bukkit.Bukkit
+import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.entity.EntityDeathEvent
+import org.bukkit.event.inventory.CraftItemEvent
+
+class TournamentHandler(private val tournamentManager: TournamentManager) : Listener {
+
+    @EventHandler
+    fun onBlockBreak(event: BlockBreakEvent) {
+        val player = event.player
+        val block = event.block
+        val tournaments = tournamentManager.getActiveTournamentsByObjective("mineblock:${block.type}")
+        tournaments.forEach { tournament ->
+            updatePlayerProgress(player, tournament)
+        }
+    }
+
+    @EventHandler
+    fun onEntityDeath(event: EntityDeathEvent) {
+        val entity = event.entity
+        val killer = entity.killer
+        if (killer is Player) {
+            println("Killed entity: ${entity.type}, killer: ${killer.name}")
+            val tournaments = tournamentManager.getActiveTournamentsByObjective("killentity:${entity.type}")
+            tournaments.forEach { tournament ->
+                updatePlayerProgress(killer, tournament)
+            }
+        }
+    }
+
+    @EventHandler
+    fun onCraftItem(event: CraftItemEvent) {
+        val player = event.whoClicked as? Player ?: return
+        val item = event.recipe.result
+        val tournaments = tournamentManager.getActiveTournamentsByObjective("craftitem:${item.type}")
+        tournaments.forEach { tournament ->
+            updatePlayerProgress(player, tournament)
+        }
+    }
+
+    fun updatePlayerProgress(player: Player, tournament: Tournament) {
+        val playerId = player.uniqueId.toString()
+        val tournamentId = tournament.name
+        val progress = PlayerProgress().getProgress(playerId, tournamentId) + 1
+        PlayerProgress().updateProgress(playerId, tournamentId, progress)
+    }
+}

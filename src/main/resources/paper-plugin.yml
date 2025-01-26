@@ -1,0 +1,13 @@
+name: Tournament
+version: '1.0'
+main: dev.marten_mrfcyt.tournament.Tournament
+api-version: '1.21'
+prefix: Tournaments
+load: STARTUP
+authors: [ Marten_mrfcyt ]
+description: A commision for RepublicMC for a tournament plugin
+dependencies:
+  server:
+    KingdomCraft:
+      load: OMIT
+      required: true
