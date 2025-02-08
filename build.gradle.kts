@@ -25,7 +25,7 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    api("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("com.github.marten-mrfc:LirandAPI:621cd466ce")
     compileOnly("net.kyori:adventure-text-minimessage:4.13.1")
     compileOnly("com.mojang:brigadier:1.0.18")

@@ -1,12 +1,13 @@
 package dev.marten_mrfcyt.tournament.tournaments
 
+import dev.marten_mrfcyt.tournament.utils.checkCustomValue
+import dev.marten_mrfcyt.tournament.utils.setCustomValue
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.entity.EntityDeathEvent
-import org.bukkit.event.inventory.CraftItemEvent
 
 class TournamentHandler(private val tournamentManager: TournamentManager) : Listener {
 
@@ -30,16 +31,6 @@ class TournamentHandler(private val tournamentManager: TournamentManager) : List
             tournaments.forEach { tournament ->
                 updatePlayerProgress(killer, tournament)
             }
-        }
-    }
-
-    @EventHandler
-    fun onCraftItem(event: CraftItemEvent) {
-        val player = event.whoClicked as? Player ?: return
-        val item = event.recipe.result
-        val tournaments = tournamentManager.getActiveTournamentsByObjective("craftitem:${item.type}")
-        tournaments.forEach { tournament ->
-            updatePlayerProgress(player, tournament)
         }
     }
 

@@ -8,11 +8,15 @@ import java.io.File
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.collections.set
+import kotlin.concurrent.withLock
 
 class PlayerProgress {
     private val file = File("plugins/Tournament/player_progress.yml")
     private val config = YamlConfiguration.loadConfiguration(file)
     private val playerProgress = ConcurrentHashMap<String, Int>()
+    private val lock = ReentrantLock()
 
     init {
         loadProgressFromFile()
@@ -29,17 +33,21 @@ class PlayerProgress {
     }
 
     fun updateProgress(playerId: String, tournamentId: String, progress: Int) {
-        val key = "$playerId-$tournamentId"
-        playerProgress[key] = progress
-        config.set(key, progress)
-        config.save(file)
+        lock.withLock {
+            val key = "$playerId-$tournamentId"
+            playerProgress[key] = progress
+            config.set(key, progress)
+            config.save(file)
+        }
     }
 
     fun saveProgressToFile() {
-        playerProgress.forEach { (key, progress) ->
-            config.set(key, progress)
+        lock.withLock {
+            playerProgress.forEach { (key, progress) ->
+                config.set(key, progress)
+            }
+            config.save(file)
         }
-        config.save(file)
     }
 
     fun getAllProgressForTournament(tournamentId: String): Map<String, Int> {

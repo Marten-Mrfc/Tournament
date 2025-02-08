@@ -15,39 +15,28 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ItemMeta
 import java.io.File
 import java.util.UUID
-import kotlin.collections.set
-import kotlin.text.contains
-import kotlin.toString
 
 class RewardsMenu {
 
     fun open(player: Player) {
         val rewardsConfig = YamlConfiguration.loadConfiguration(File("plugins/Tournament/playerrewards.yml"))
         val playerId = player.uniqueId.toString()
-        println(playerId)
-        val playerRewards = rewardsConfig.getConfigurationSection("players.$playerId")?.getKeys(false) ?: emptySet()
-        println(playerRewards)
-        val provinceRewards: List<String> = rewardsConfig.getConfigurationSection("provincie")?.getKeys(false)?.flatMap { province ->
-            println("Checking province: $province")
+        val playerRewards: Map<String, String> = rewardsConfig.getConfigurationSection("players.$playerId")?.getKeys(false)?.associate { key ->
+            key to "players.$playerId.$key"
+        } ?: emptyMap()
+        val provinceRewards: Map<String, String> = rewardsConfig.getConfigurationSection("provincie")?.getKeys(false)?.flatMap { province ->
             getKingdoms().find { it == province }?.let {
-                println("Found province: $it")
                 getKingdomMembers(it).mapNotNull { memberId ->
                     if (memberId == player.uniqueId) {
-                        println("Found member: $memberId")
                         rewardsConfig.getConfigurationSection("provincie.$province")?.getKeys(false)?.map { key ->
-                            "$province: $key"
+                            "$province: $key" to "provincie.$province.$key"
                         }
                     } else {
                         null
                     }
-                }.flatten().also { members ->
-                    if (members.isNotEmpty()) {
-                        // Add your thing here
-                        println("Adding thing for province: $province")
-                    }
-                }
+                }.flatten()
             } ?: emptyList()
-        } ?: emptyList()
+        }?.toMap() ?: emptyMap()
 
         val inventory: Inventory = Bukkit.createInventory(null, 9 * 5, "Rewards".asMini())
 
@@ -61,10 +50,9 @@ class RewardsMenu {
         for (i in 19 until 26) {
             inventory.setItem(i, null)
         }
-
-        (playerRewards + provinceRewards).forEachIndexed { index, rewardKey ->
-            println(rewardKey)
-            val score = rewardsConfig.getInt("$rewardKey.score")
+        var index = 0
+        (playerRewards + provinceRewards).forEach { (rewardKey, rewardPath) ->
+            val score = rewardsConfig.getInt("$rewardPath.score")
             val item = ItemStack(Material.PAPER)
             val meta: ItemMeta = item.itemMeta
             meta.displayName("<b><gold>${rewardKey.replace("_", " ").uppercase()}</gold></b>".asMini())
@@ -79,30 +67,24 @@ class RewardsMenu {
             setCustomValue(meta, Tournament.instance, "gui", "rewards")
             item.itemMeta = meta
             inventory.setItem(19 + index, item)
+            index++
         }
         player.openInventory(inventory)
     }
 
     fun claimReward(player: Player, tournamentName: String) {
-        println("Claiming reward for $tournamentName")
         val rewardsConfig = YamlConfiguration.loadConfiguration(File("plugins/Tournament/playerrewards.yml"))
         val playerId = player.uniqueId.toString()
         val rewardKey = "players.$playerId.$tournamentName"
-        println("Player reward key: $rewardKey")
 
         val playerProvincie = getKingdoms().find { kingdom ->
             val members = getKingdomMembers(kingdom)
-            println("Checking kingdom: $kingdom with members: $members")
             members.contains(UUID.fromString(playerId))
         }
-        println("Player province: $playerProvincie")
 
         val provinceKey = "provincie.$playerProvincie.$tournamentName"
-        println("Province reward key: $provinceKey")
 
-        // Check if the reward is for a province
         val isProvinceReward = rewardsConfig.contains(provinceKey)
-        println("Is province reward: $isProvinceReward")
 
         val inventoryItems = if (isProvinceReward) {
             rewardsConfig.getList("$provinceKey.items")?.filterIsInstance<ItemStack>()

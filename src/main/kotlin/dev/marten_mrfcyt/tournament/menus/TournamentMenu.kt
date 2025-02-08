@@ -116,7 +116,6 @@ class TournamentMenu(private val tournamentManager: TournamentManager) {
         return when {
             objective.startsWith("mineblock:") -> "Heeft $progress ${objective.removePrefix("mineblock:").lowercase()} gemined"
             objective.startsWith("killentity:") -> "Heeft $progress ${objective.removePrefix("killentity:").lowercase()}'s vermoord"
-            objective.startsWith("craftitem:") -> "Heeft $progress ${objective.removePrefix("craftitem:").lowercase()} gecraft"
             else -> "Progress: $progress"
         }
     }

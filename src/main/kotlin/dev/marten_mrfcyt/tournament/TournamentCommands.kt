@@ -10,6 +10,7 @@ import dev.marten_mrfcyt.tournament.tournaments.TournamentManager
 import dev.marten_mrfcyt.tournament.utils.*
 import lirand.api.dsl.command.builders.LiteralDSLBuilder
 import lirand.api.dsl.command.builders.command
+import lirand.api.extensions.inventory.meta
 import org.bukkit.Material
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
@@ -57,12 +58,12 @@ private fun LiteralDSLBuilder.setup() {
                     }
                     argument("objectiveType", StringArgumentType.word()) {
                         suggests { builder ->
-                            builder.suggest("mineblock").suggest("killentity").suggest("craftitem").buildFuture()
+                            builder.suggest("mineblock").suggest("killentity").buildFuture()
                         }
                         argument("objective", StringArgumentType.string()) {
                             suggests { builder ->
                                 when (getArgument("objectiveType", String::class.java)) {
-                                    "mineblock", "craftitem" -> Material.entries.forEach { builder.suggest(it.name) }
+                                    "mineblock" -> Material.entries.forEach { builder.suggest(it.name) }
                                     "killentity" -> EntityType.entries.forEach { builder.suggest(it.name) }
                                 }
                                 builder.buildFuture()

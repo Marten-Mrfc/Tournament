@@ -49,6 +49,7 @@ class TournamentListMenu(private val tournamentManager: TournamentManager) {
             }
             meta.lore(listOf(
                 "<dark_gray>${tournament.description}".asMini(),
+                "<dark_gray>Per ${tournament.target}.".asMini(),
                 "".asMini(),
                 "<b><gold>JOUW SCORE</gold></b>".asMini(),
                 "<white>${PlayerProgress().getProgress(player.uniqueId.toString(), tournament.name)}".asMini(),
