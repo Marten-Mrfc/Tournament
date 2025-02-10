@@ -1,18 +1,17 @@
 package dev.marten_mrfcyt.tournament.tournaments
 
-import dev.marten_mrfcyt.tournament.utils.checkCustomValue
-import dev.marten_mrfcyt.tournament.utils.setCustomValue
-import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.entity.EntityDeathEvent
 
 class TournamentHandler(private val tournamentManager: TournamentManager) : Listener {
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     fun onBlockBreak(event: BlockBreakEvent) {
+        if(event.isCancelled) return
         val player = event.player
         val block = event.block
         val tournaments = tournamentManager.getActiveTournamentsByObjective("mineblock:${block.type}")
