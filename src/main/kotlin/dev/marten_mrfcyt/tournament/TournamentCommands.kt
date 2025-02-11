@@ -26,6 +26,7 @@ fun Plugin.tournamentCommands() = command("tournament") {
 private fun LiteralDSLBuilder.setup() {
     val tournamentManager = TournamentManager()
     literal("info") {
+        requiresPermissions("tournament.info")
         executes {
             val commands = listOf(
                 "/tournament: Open menu with all the current tournaments.",
@@ -109,6 +110,7 @@ private fun LiteralDSLBuilder.setup() {
         }
     }
     literal("finish") {
+        requiresPermissions("tournament.finish")
         argument("name", StringArgumentType.word()) {
             suggests { builder ->
                 tournamentManager.getTournamentsNames().forEach { builder.suggest(it) }
@@ -123,12 +125,14 @@ private fun LiteralDSLBuilder.setup() {
         }
     }
     literal("list") {
+        requiresPermissions("tournament.list")
         executes {
             source.message("<gray>---<reset> <gold>Listing all tournaments<reset> <gray>---")
             tournamentManager.getTournaments().forEach { source.message("<green>* <white>${it.name}, ${it.description}, ${it.objective}, ${it.target}, ${it.levels}, ${it.endTime}") }
         }
     }
     literal("remove") {
+        requiresPermissions("tournament.remove")
         argument("name", StringArgumentType.word()) {
             suggests { builder ->
                 tournamentManager.getTournamentsNames().forEach { builder.suggest(it) }
