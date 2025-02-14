@@ -101,10 +101,10 @@ class RewardsMenu {
         } else {
             rewardsConfig.getInt("$rewardKey.position") + 1
         }
-        if(Tournament.instance.config.contains("$position-eco")) {
+        if(Tournament.instance.config.contains("$position-eco") && Tournament.instance.config.getInt("$position-eco") != 0) {
             Tournament.essentials.getUser(player).money += Tournament.instance.config.getInt("$position-eco").toBigDecimal()
         }
-        if(Tournament.instance.config.contains("$position-diamonds")) {
+        if(Tournament.instance.config.contains("$position-diamonds") && Tournament.instance.config.getInt("$position-diamonds") != 0) {
             (inventoryItems as ArrayList).add(ItemStack(Material.DIAMOND, Tournament.instance.config.getInt("$position-diamonds")))
         }
 
