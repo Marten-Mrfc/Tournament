@@ -98,6 +98,7 @@ class PlayerProgress {
                     if (kingdom != null) {
                         val rewardKey = "provincie.${kingdom}.${tournament.name.replace(" ", "_").lowercase()}"
                         rewardsConfig.set("$rewardKey.score", progress)
+                        rewardsConfig.set("$rewardKey.position", topPlayers.indexOf(Pair(playerId, progress)))
                         rewardsConfig.set("$rewardKey.items", inventoryItems)
                         rewardsConfig.set("$rewardKey.levels", tournament.levels)
                         rewardsConfig.set("$rewardKey.type", "provincie")
@@ -113,6 +114,7 @@ class PlayerProgress {
                 topPlayers.forEach { (playerId, progress) ->
                     val rewardKey = "players.$playerId.${tournament.name.replace(" ", "_").lowercase()}"
                     rewardsConfig.set("$rewardKey.score", progress)
+                    rewardsConfig.set("$rewardKey.position", topPlayers.indexOf(Pair(playerId, progress)))
                     rewardsConfig.set("$rewardKey.items", inventoryItems)
                     rewardsConfig.set("$rewardKey.levels", tournament.levels)
                     rewardsConfig.save(File("plugins/Tournament/playerrewards.yml"))

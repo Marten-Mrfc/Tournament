@@ -14,6 +14,7 @@ version = "1.0"
 repositories {
     mavenCentral()
     maven("https://javadoc.jitpack.io")
+    maven(url = "https://repo.essentialsx.net/releases/")
     maven("https://repo.codemc.io/repository/maven-releases/")
     maven("https://repo.codemc.io/repository/maven-snapshots/")
     maven("https://repo.opencollab.dev/maven-snapshots/")
@@ -31,6 +32,7 @@ dependencies {
     compileOnly("com.mojang:brigadier:1.0.18")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk9:1.6.0")
     compileOnly("com.gufli.kingdomcraft.starter:api:7.1.1")
+    compileOnly("net.essentialsx:EssentialsX:2.20.1")
 }
 
 val targetJavaVersion = 21

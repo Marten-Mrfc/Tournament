@@ -27,7 +27,7 @@ class RewardsMenu {
         val provinceRewards: Map<String, String> = rewardsConfig.getConfigurationSection("provincie")?.getKeys(false)?.flatMap { province ->
             getKingdoms().find { it == province }?.let {
                 getKingdomMembers(it).mapNotNull { memberId ->
-                    if (memberId == player.uniqueId) {
+                    if (memberId == player.uniqueId && player.hasPermission("tournament.claimreward.provincie")) {
                         rewardsConfig.getConfigurationSection("provincie.$province")?.getKeys(false)?.map { key ->
                             "$province: $key" to "provincie.$province.$key"
                         }
@@ -86,13 +86,26 @@ class RewardsMenu {
 
         val isProvinceReward = rewardsConfig.contains(provinceKey)
 
-        val inventoryItems = if (isProvinceReward) {
+        var inventoryItems = if (isProvinceReward) {
             rewardsConfig.getList("$provinceKey.items")?.filterIsInstance<ItemStack>()
         } else {
             rewardsConfig.getList("$rewardKey.items")?.filterIsInstance<ItemStack>()
         } ?: run {
             println("No items found for reward key")
             return
+        }
+        inventoryItems = ArrayList(inventoryItems)
+
+        val position = if (isProvinceReward) {
+            rewardsConfig.getInt("$provinceKey.position") + 1
+        } else {
+            rewardsConfig.getInt("$rewardKey.position") + 1
+        }
+        if(Tournament.instance.config.contains("$position-eco")) {
+            Tournament.essentials.getUser(player).money += Tournament.instance.config.getInt("$position-eco").toBigDecimal()
+        }
+        if(Tournament.instance.config.contains("$position-diamonds")) {
+            (inventoryItems as ArrayList).add(ItemStack(Material.DIAMOND, Tournament.instance.config.getInt("$position-diamonds")))
         }
 
         val remainingItems = mutableListOf<ItemStack>()
@@ -102,6 +115,8 @@ class RewardsMenu {
                 remainingItems.addAll(result.values)
             }
         }
+
+
         if (remainingItems.isNotEmpty()) {
             Bukkit.getScheduler().runTask(Tournament.instance, Runnable {
                 remainingItems.forEach { remainingItem ->
@@ -111,6 +126,7 @@ class RewardsMenu {
             player.message("Jammer genoeg had je niet genoeg ruimte in je inventory voor alle items en zijn ze op de grond gevallen.")
         }
         player.giveExpLevels(rewardsConfig.getInt(if (isProvinceReward) "$provinceKey.levels" else "$rewardKey.levels"))
+
 
         if (isProvinceReward) {
             rewardsConfig.set("provincie.$playerProvincie.$tournamentName", null)

@@ -11,3 +11,6 @@ dependencies:
     KingdomCraft:
       load: OMIT
       required: true
+    Essentials:
+      load: OMIT
+      required: true
