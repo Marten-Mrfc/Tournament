@@ -30,6 +30,10 @@ class Tournament : KotlinPlugin() {
         )
         logger.info("Loaded ${TournamentManager().getTournaments().size} tournaments")
 
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, {
+            TournamentHandler.locations.clear()
+        }, 100, 100)
+
         // Start the TournamentEndChecker
         logger.info("Starting TournamentEndChecker")
         tournamentEndChecker = TournamentEndChecker(TournamentManager())

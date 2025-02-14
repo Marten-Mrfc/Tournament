@@ -1,17 +1,24 @@
 package dev.marten_mrfcyt.tournament.tournaments
 
+import org.bukkit.Location
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.EntityDeathEvent
 
 class TournamentHandler(private val tournamentManager: TournamentManager) : Listener {
 
+    companion object {
+        val locations: HashSet<Location> = HashSet()
+    }
+
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onBlockBreak(event: BlockBreakEvent) {
         if(event.isCancelled) return
+        if(locations.contains(event.block.location)) return
         val player = event.player
         val block = event.block
         val tournaments = tournamentManager.getActiveTournamentsByObjective("mineblock:${block.type}")
@@ -19,6 +26,12 @@ class TournamentHandler(private val tournamentManager: TournamentManager) : List
             updatePlayerProgress(player, tournament)
         }
     }
+
+    @EventHandler
+    fun onBlockPlace(event: BlockPlaceEvent) {
+        locations.add(event.block.location)
+    }
+
 
     @EventHandler
     fun onEntityDeath(event: EntityDeathEvent) {
