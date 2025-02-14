@@ -38,7 +38,6 @@ class TournamentHandler(private val tournamentManager: TournamentManager) : List
         val entity = event.entity
         val killer = entity.killer
         if (killer is Player) {
-            println("Killed entity: ${entity.type}, killer: ${killer.name}")
             val tournaments = tournamentManager.getActiveTournamentsByObjective("killentity:${entity.type}")
             tournaments.forEach { tournament ->
                 updatePlayerProgress(killer, tournament)

@@ -115,9 +115,6 @@ class TournamentManager {
                 }
                 val levels = config.getInt("tournaments.$key.levels")
                 val inventory = config.get("tournaments.$key.inventory") as? Inventory
-                if (inventory == null) {
-                    println("Inventory for tournament $key is null")
-                }
                 tournaments.add(Tournament(name, description, type, obj, target, inventory, levels))
             }
         }
