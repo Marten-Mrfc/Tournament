@@ -37,7 +37,7 @@ class Tournament : KotlinPlugin() {
 
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, {
             TournamentHandler.locations.clear()
-        }, 100, 100)
+        }, 100, 500)
 
         // Start the TournamentEndChecker
         logger.info("Starting TournamentEndChecker")
