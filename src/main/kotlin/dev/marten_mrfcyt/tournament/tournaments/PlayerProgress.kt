@@ -9,22 +9,32 @@ import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantLock
-import kotlin.collections.set
 import kotlin.concurrent.withLock
 
-class PlayerProgress {
+class PlayerProgress private constructor() {
     private val file = File("plugins/Tournament/player_progress.yml")
     private val config = YamlConfiguration.loadConfiguration(file)
     private val playerProgress = ConcurrentHashMap<String, Int>()
     private val lock = ReentrantLock()
+    private var isDirty = false
 
-    init {
-        loadProgressFromFile()
+    companion object {
+        private lateinit var instance: PlayerProgress
+
+        fun getInstance(): PlayerProgress {
+            if (!::instance.isInitialized) {
+                instance = PlayerProgress()
+                instance.loadData()
+            }
+            return instance
+        }
     }
 
-    private fun loadProgressFromFile() {
-        config.getKeys(false).forEach { key ->
-            playerProgress[key] = config.getInt(key)
+    private fun loadData() {
+        lock.withLock {
+            config.getKeys(false).forEach { key ->
+                playerProgress[key] = config.getInt(key)
+            }
         }
     }
 
@@ -36,17 +46,18 @@ class PlayerProgress {
         lock.withLock {
             val key = "$playerId-$tournamentId"
             playerProgress[key] = progress
-            config.set(key, progress)
-            config.save(file)
+            isDirty = true
         }
     }
 
     fun saveProgressToFile() {
         lock.withLock {
+            if (!isDirty) return
             playerProgress.forEach { (key, progress) ->
                 config.set(key, progress)
             }
             config.save(file)
+            isDirty = false
         }
     }
 
@@ -56,7 +67,7 @@ class PlayerProgress {
     }
 
     fun calculateStandingsAsync(tournament: Tournament): CompletableFuture<List<Pair<UUID, Int>>> {
-        return CompletableFuture.supplyAsync<List<Pair<UUID, Int>>> {
+        return CompletableFuture.supplyAsync {
             val playerProgress = getAllProgressForTournament(tournament.name)
             val sortedPlayers = playerProgress.entries
                 .sortedByDescending { it.value }
@@ -113,10 +124,10 @@ class PlayerProgress {
             } else {
                 topPlayers.forEach { (playerId, progress) ->
                     val rewardKey = "players.$playerId.${tournament.name.replace(" ", "_").lowercase()}"
-                    rewardsConfig.set("$rewardKey.score", progress)
                     rewardsConfig.set("$rewardKey.position", topPlayers.indexOf(Pair(playerId, progress)))
                     rewardsConfig.set("$rewardKey.items", inventoryItems)
                     rewardsConfig.set("$rewardKey.levels", tournament.levels)
+                    rewardsConfig.set("$rewardKey.score", progress)
                     rewardsConfig.save(File("plugins/Tournament/playerrewards.yml"))
                     Bukkit.getPlayer(playerId)?.message("Gefeliciteerd! Je hebt de ${tournament.name} gewonnen met $progress punten! Doe /tournament claimreward om je prijs te claimen.")
                 }
@@ -135,7 +146,8 @@ class PlayerProgress {
         keysToRemove.forEach { key ->
             playerProgress.remove(key)
             config.set(key, null)
+            isDirty = true
         }
-        config.save(file)
+        saveProgressToFile()
     }
 }

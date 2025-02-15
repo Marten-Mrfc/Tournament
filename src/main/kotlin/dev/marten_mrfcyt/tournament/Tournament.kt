@@ -49,7 +49,7 @@ class Tournament : KotlinPlugin() {
     }
 
     override fun onDisable() {
-        PlayerProgress().saveProgressToFile()
+        PlayerProgress.getInstance().saveProgressToFile()
         logger.info("Tournaments has stopped")
 
         // Stop the TournamentEndChecker

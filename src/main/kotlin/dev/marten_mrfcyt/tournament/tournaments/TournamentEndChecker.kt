@@ -29,7 +29,7 @@ class TournamentEndChecker(private val tournamentManager: TournamentManager) {
 
     private fun onTournamentEnd(tournament: Tournament) {
         Bukkit.getScheduler().runTask(dev.marten_mrfcyt.tournament.Tournament.instance, Runnable {
-            PlayerProgress().giveRewards(tournament.name)
+            PlayerProgress.getInstance().giveRewards(tournament.name)
             tournamentManager.removeTournament(tournament.name)
         })
     }

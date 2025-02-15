@@ -48,7 +48,7 @@ class TournamentHandler(private val tournamentManager: TournamentManager) : List
     fun updatePlayerProgress(player: Player, tournament: Tournament) {
         val playerId = player.uniqueId.toString()
         val tournamentId = tournament.name
-        val progress = PlayerProgress().getProgress(playerId, tournamentId) + 1
-        PlayerProgress().updateProgress(playerId, tournamentId, progress)
+        val progress = PlayerProgress.getInstance()
+        progress.updateProgress(playerId, tournamentId, progress.getProgress(playerId, tournamentId) + 1)
     }
 }

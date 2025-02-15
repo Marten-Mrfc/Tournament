@@ -118,7 +118,7 @@ private fun LiteralDSLBuilder.setup() {
             }
             executes {
                 source.message("<green>Finishing tournament")
-                PlayerProgress().giveRewards(getArgument("name"))
+                PlayerProgress.getInstance().giveRewards(getArgument("name"))
                 source.message("<green>Removing tournament")
                 tournamentManager.removeTournament(getArgument("name"))
             }

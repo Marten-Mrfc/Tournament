@@ -35,7 +35,7 @@ class TournamentMenu(private val tournamentManager: TournamentManager) {
         })
         val kingdoms = getKingdoms()
         CompletableFuture.runAsync {
-            val playerData = PlayerProgress().getAllProgressForTournament(tournamentName)
+            val playerData = PlayerProgress.getInstance().getAllProgressForTournament(tournamentName)
             val items = if (tournament.target == "provincie") {
                 val kingdomProgress = mutableMapOf<String, Int>()
                 playerData.forEach { (playerId, progress) ->

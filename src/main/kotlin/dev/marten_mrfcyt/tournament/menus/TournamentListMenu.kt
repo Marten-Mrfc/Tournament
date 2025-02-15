@@ -55,7 +55,7 @@ class TournamentListMenu(private val tournamentManager: TournamentManager) {
                 "<dark_gray>Per ${tournament.target}.".asMini(),
                 "".asMini(),
                 "<b><gold>JOUW SCORE</gold></b>".asMini(),
-                "<white>${PlayerProgress().getProgress(player.uniqueId.toString(), tournament.name)}".asMini(),
+                "<white>${PlayerProgress.getInstance().getProgress(player.uniqueId.toString(), tournament.name)}".asMini(),
                 "".asMini(),
                 "<b><gold>TIJD RESTEREND</gold></b>".asMini(),
                 "<white>${formatTimeRemaining(LocalDateTime.parse(tournament.endTime))}".asMini(),
