@@ -73,9 +73,10 @@ class TournamentManager {
         return tournaments
     }
     fun getTopPlayers(tournamentName: String): HashMap<Player, Int> {
-        val playerProgress = PlayerProgress().getAllProgressForTournament(tournamentName)
+        val playerProgress = PlayerProgress.getInstance().getAllProgressForTournament(tournamentName)
         val sortedPlayers = playerProgress.entries
             .sortedByDescending { it.value }
+            .take(5)  // Take only top 5 players
             .mapNotNull { (playerId, progress) ->
                 val player = Bukkit.getPlayer(UUID.fromString(playerId))
                 if (player != null) player to progress else null

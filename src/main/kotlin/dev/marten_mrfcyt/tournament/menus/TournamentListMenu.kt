@@ -38,15 +38,18 @@ class TournamentListMenu(private val tournamentManager: TournamentManager) {
             val meta: ItemMeta = item.itemMeta
             meta.displayName("<b><gold>${tournament.name.uppercase()}</gold></b>".asMini())
             val topPlayers = tournamentManager.getTopPlayers(tournament.name)
-            val topPlayersLore = topPlayers.keys.mapIndexed { index, player ->
-                val color = when (index) {
-                    0 -> "<#C9B037>"
-                    1 -> "<#D7D7D7>"
-                    2 -> "<#6A3805>"
-                    else -> "<gray>"
+            val topPlayersLore = topPlayers.entries
+                .sortedByDescending { it.value }
+                .take(5)
+                .mapIndexed { index, entry ->
+                    val color = when (index) {
+                        0 -> "<#C9B037>"
+                        1 -> "<#D7D7D7>"
+                        2 -> "<#6A3805>"
+                        else -> "<gray>"
+                    }
+                    "$color${index + 1}. <white>${entry.key.name} - ${entry.value}P".asMini()
                 }
-                "$color${index + 1}. <white>${player.name} - ${topPlayers[player]}P".asMini()
-            }
             meta.lore(listOf(
                 "<dark_gray>${tournament.description}".asMini(),
                 "<dark_gray>Per ${tournament.target}.".asMini(),
