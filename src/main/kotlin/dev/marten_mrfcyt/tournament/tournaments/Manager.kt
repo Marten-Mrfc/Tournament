@@ -2,6 +2,7 @@ package dev.marten_mrfcyt.tournament.tournaments
 
 import org.bukkit.Bukkit
 import org.bukkit.Material
+import org.bukkit.OfflinePlayer
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
@@ -72,17 +73,18 @@ class TournamentManager {
         }
         return tournaments
     }
-    fun getTopPlayers(tournamentName: String): HashMap<Player, Int> {
+    fun getTopPlayers(tournamentName: String): HashMap<OfflinePlayer, Int> {
         val playerProgress = PlayerProgress.getInstance().getAllProgressForTournament(tournamentName)
         val sortedPlayers = playerProgress.entries
             .sortedByDescending { it.value }
-            .take(5)  // Take only top 5 players
+            .take(5)
             .mapNotNull { (playerId, progress) ->
-                val player = Bukkit.getPlayer(UUID.fromString(playerId))
+                val player = Bukkit.getOfflinePlayer(UUID.fromString(playerId))
                 if (player != null) player to progress else null
             }
         return hashMapOf(*sortedPlayers.toTypedArray())
     }
+
     fun getActiveTournamentsByObjective(objective: String): List<Tournament> {
         val config = loadConfig()
         val tournaments = mutableListOf<Tournament>()

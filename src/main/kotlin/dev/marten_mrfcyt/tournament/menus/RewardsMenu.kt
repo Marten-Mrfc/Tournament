@@ -105,7 +105,7 @@ class RewardsMenu {
             Tournament.essentials.getUser(player).money += Tournament.instance.config.getInt("$position-eco").toBigDecimal()
         }
         if(Tournament.instance.config.contains("$position-diamonds") && Tournament.instance.config.getInt("$position-diamonds") != 0) {
-            (inventoryItems as ArrayList).add(ItemStack(Material.DIAMOND, Tournament.instance.config.getInt("$position-diamonds")))
+            inventoryItems.add(ItemStack(Material.DIAMOND, Tournament.instance.config.getInt("$position-diamonds")))
         }
 
         val remainingItems = mutableListOf<ItemStack>()
