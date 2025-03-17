@@ -43,10 +43,11 @@ class RewardsMenu {
         val fillerItem = ItemStack(Material.GRAY_STAINED_GLASS_PANE)
         val fillerMeta: ItemMeta = fillerItem.itemMeta
         fillerMeta.displayName(" ".asMini())
+        setCustomValue(fillerMeta, Tournament.instance, "gui", "glasspane")
+        fillerItem.itemMeta = fillerMeta
         for (i in 0 until inventory.size) {
             inventory.setItem(i, fillerItem)
         }
-        fillerItem.itemMeta = fillerMeta
         for (i in 19 until 26) {
             inventory.setItem(i, null)
         }

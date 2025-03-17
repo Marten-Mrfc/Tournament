@@ -25,7 +25,7 @@ class TournamentListMenu(private val tournamentManager: TournamentManager) {
         val fillerMeta: ItemMeta = fillerItem.itemMeta
         fillerMeta.displayName(" ".asMini())
         setCustomValue(fillerMeta, Tournament.instance, "gui", "glasspane")
-        fillerItem.itemMeta = fillerMeta
+            fillerItem.itemMeta = fillerMeta
         for (i in 0 until inventory.size) {
             inventory.setItem(i, fillerItem)
         }
