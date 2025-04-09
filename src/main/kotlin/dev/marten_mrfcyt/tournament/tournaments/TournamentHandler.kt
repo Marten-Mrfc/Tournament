@@ -1,5 +1,7 @@
 package dev.marten_mrfcyt.tournament.tournaments
 
+import dev.marten_mrfcyt.tournament.tournaments.models.ObjectiveType
+import dev.marten_mrfcyt.tournament.tournaments.models.Tournament
 import org.bukkit.Location
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -19,10 +21,16 @@ class TournamentHandler(private val tournamentManager: TournamentManager) : List
     fun onBlockBreak(event: BlockBreakEvent) {
         if(event.isCancelled) return
         if(locations.contains(event.block.location)) return
+
         val player = event.player
         val block = event.block
-        val tournaments = tournamentManager.getActiveTournamentsByObjective("mineblock:${block.type}")
-        tournaments.forEach { tournament ->
+
+        val activeTournaments = tournamentManager.getTournaments().filter { tournament ->
+            tournament.objective.type == ObjectiveType.MINE_BLOCK &&
+                    tournament.objective.target == block.type.name
+        }
+
+        activeTournaments.forEach { tournament ->
             updatePlayerProgress(player, tournament)
         }
     }
@@ -32,14 +40,19 @@ class TournamentHandler(private val tournamentManager: TournamentManager) : List
         locations.add(event.block.location)
     }
 
-
     @EventHandler
     fun onEntityDeath(event: EntityDeathEvent) {
         val entity = event.entity
         val killer = entity.killer
+
         if (killer is Player) {
-            val tournaments = tournamentManager.getActiveTournamentsByObjective("killentity:${entity.type}")
-            tournaments.forEach { tournament ->
+            // Get active tournaments for killing this entity type
+            val activeTournaments = tournamentManager.getTournaments().filter { tournament ->
+                tournament.objective.type == ObjectiveType.KILL_ENTITY &&
+                        tournament.objective.target == entity.type.name
+            }
+
+            activeTournaments.forEach { tournament ->
                 updatePlayerProgress(killer, tournament)
             }
         }

@@ -1,5 +1,6 @@
 package dev.marten_mrfcyt.tournament.tournaments
 
+import dev.marten_mrfcyt.tournament.tournaments.models.Tournament
 import org.bukkit.Bukkit
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
