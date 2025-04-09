@@ -1,12 +1,12 @@
 package dev.marten_mrfcyt.tournament
 
 import com.earth2me.essentials.Essentials
-import dev.marten_mrfcyt.tournament.menus.GuiHandler
+import dev.marten_mrfcyt.tournament.rewards.RewardsManager
 import dev.marten_mrfcyt.tournament.tournaments.PlayerProgress
 import dev.marten_mrfcyt.tournament.tournaments.TournamentEndChecker
 import dev.marten_mrfcyt.tournament.tournaments.TournamentHandler
 import dev.marten_mrfcyt.tournament.tournaments.TournamentManager
-import lirand.api.architecture.KotlinPlugin
+import mlib.api.architecture.KotlinPlugin
 import org.bukkit.Bukkit
 import org.bukkit.event.Listener
 
@@ -22,16 +22,21 @@ class Tournament : KotlinPlugin() {
         logger.info("-------------------------------")
         logger.info("--- Tournaments is starting ---")
         instance = this
+        super.onEnable()
         config.options().copyDefaults()
         saveDefaultConfig()
         essentials = (server.pluginManager.getPlugin("Essentials") as Essentials?)!!
+
+        // Initialize the rewards manager
+        logger.info("Loading rewards data...")
+        RewardsManager.getInstance().loadRewards()
+
         logger.info("Registering commands")
         tournamentCommands()
         logger.info("Commands registered successfully!")
         logger.info("Registering events")
         registerEvents(
             TournamentHandler(TournamentManager()),
-            GuiHandler(TournamentManager())
         )
         logger.info("Loaded ${TournamentManager().getTournaments().size} tournaments")
 
@@ -39,7 +44,6 @@ class Tournament : KotlinPlugin() {
             TournamentHandler.locations.clear()
         }, 100, 500)
 
-        // Start the TournamentEndChecker
         logger.info("Starting TournamentEndChecker")
         tournamentEndChecker = TournamentEndChecker(TournamentManager())
         tournamentEndChecker.startChecking()
@@ -49,11 +53,15 @@ class Tournament : KotlinPlugin() {
     }
 
     override fun onDisable() {
-        PlayerProgress.getInstance().saveProgressToFile()
-        logger.info("Tournaments has stopped")
+        logger.info("Saving rewards data...")
+        RewardsManager.getInstance().saveRewards()
 
-        // Stop the TournamentEndChecker
+        // Save player progress
+        PlayerProgress.getInstance().saveProgressToFile()
+        logger.info("Tournament data saved successfully")
+
         tournamentEndChecker.stopChecking()
+        logger.info("Tournaments has stopped")
     }
 
     private fun registerEvents(vararg listeners: Listener) {
