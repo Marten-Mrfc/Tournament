@@ -27,12 +27,11 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
     api("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("com.github.marten-mrfc:LirandAPI:621cd466ce")
     compileOnly("net.kyori:adventure-text-minimessage:4.13.1")
     compileOnly("com.mojang:brigadier:1.0.18")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk9:1.6.0")
     compileOnly("com.gufli.kingdomcraft.starter:api:7.1.1")
     compileOnly("net.essentialsx:EssentialsX:2.20.1")
+    implementation("mlib.api:MLib:0.0.1")
 }
 
 val targetJavaVersion = 21
