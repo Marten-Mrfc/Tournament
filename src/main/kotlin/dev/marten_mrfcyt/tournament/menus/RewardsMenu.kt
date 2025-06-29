@@ -14,13 +14,19 @@ class RewardsMenu {
 
     fun open(player: Player) {
         val rewardsManager = RewardsManager.getInstance()
-        val playerId = player.uniqueId
+        val logger = Tournament.instance.logger
 
+        rewardsManager.loadRewards()
+
+        val playerId = player.uniqueId
         val playerRewards = rewardsManager.getPlayerRewards(playerId)
 
-        val provinceRewards = if (player.hasPermission("tournament.claimreward.provincie")) {
-            rewardsManager.getProvinceRewardsForPlayer(playerId)
+        val provinceRewards = if (player.hasPermission("turnament")) {
+            val rewards = rewardsManager.getProvinceRewardsForPlayer(playerId)
+            logger.info("Found ${rewards.size} province rewards for ${player.name}")
+            rewards
         } else {
+            logger.info("Player does not have permission: tournament.claimreward.provincie")
             emptyMap()
         }
 
@@ -43,7 +49,7 @@ class RewardsMenu {
                                 "<dark_gray>Jouw Score</dark_gray>".asMini(),
                                 "<white>- </white><gray>${reward.score}".asMini(),
                                 "".asMini(),
-                                "<dark_gray>Position</dark_gray>".asMini(),
+                                "<dark_gray>Positie</dark_gray>".asMini(),
                                 "<white>- </white><gray>#${reward.position + 1}".asMini(),
                                 "".asMini(),
                                 "<b><green>KLIK OM TE CLAIMEN</green></b>".asMini()
@@ -60,12 +66,12 @@ class RewardsMenu {
                     }
                 }
 
-                provinceRewards.entries.forEachIndexed { index, (tournamentName, provinceData) ->
+                provinceRewards.entries.forEachIndexed { index, (provincie, provinceData) ->
                     if (slotIndex < 36) { // Limit to available slots
-                        val (province, reward) = provinceData
+                        val (tournamentName, reward) = provinceData
 
                         standardGui.item(Material.GOLDEN_HELMET) {
-                            name("<b><gold>$province: ${tournamentName.replace("_", " ").uppercase()}</gold></b>".asMini())
+                            name("<b><gold>${provincie.name}: ${tournamentName.replace("_", " ").uppercase()}</gold></b>".asMini())
                             description(listOf(
                                 "".asMini(),
                                 "<dark_gray>Provincie Score</dark_gray>".asMini(),
@@ -80,7 +86,7 @@ class RewardsMenu {
 
                             onClick { event ->
                                 event.isCancelled = true
-                                rewardsManager.claimReward(player, tournamentName, true, province)
+                                rewardsManager.claimReward(player, tournamentName, true, provincie)
                                 Bukkit.getScheduler().runTaskLater(Tournament.instance, Runnable { open(player) }, 1L)
                             }
                         }

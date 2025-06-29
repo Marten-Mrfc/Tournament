@@ -1,5 +1,6 @@
 package dev.marten_mrfcyt.tournament.tournaments
 
+import com.gufli.kingdomcraft.api.domain.Kingdom
 import dev.marten_mrfcyt.tournament.rewards.RewardsManager
 import dev.marten_mrfcyt.tournament.tournaments.models.Tournament
 import dev.marten_mrfcyt.tournament.tournaments.models.TournamentTarget
@@ -13,13 +14,13 @@ import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
+import kotlin.text.get
 
 class PlayerProgress private constructor() {
     private val logger = Logger.getLogger(PlayerProgress::class.java.name)
     private val file = File("plugins/Tournament/player_progress.yml")
     private val config = YamlConfiguration.loadConfiguration(file)
 
-    // Use ConcurrentHashMap for thread safety
     private val playerProgress = ConcurrentHashMap<String, ConcurrentHashMap<String, Int>>()
 
     companion object {
@@ -53,19 +54,49 @@ class PlayerProgress private constructor() {
     }
 
     fun saveProgressToFile() {
-        logger.info("Saving player progress to disk...")
+        Bukkit.getScheduler().runTaskAsynchronously(dev.marten_mrfcyt.tournament.Tournament.instance, Runnable {
+            try {
+                val newConfig = YamlConfiguration()
 
-        config.getKeys(false).forEach { key ->
-            config.set(key, null)
-        }
+                val playerBatches = playerProgress.entries.chunked(100)
+                for (batch in playerBatches) {
+                    for ((playerId, tournamentProgress) in batch) {
+                        if (tournamentProgress.isEmpty()) continue
 
-        playerProgress.forEach { (playerId, tournamentProgress) ->
-            tournamentProgress.forEach { (tournamentId, progress) ->
-                config.set("$playerId.$tournamentId", progress)
+                        tournamentProgress.forEach { (tournamentId, progress) ->
+                            newConfig.set("$playerId.$tournamentId", progress)
+                        }
+                    }
+                }
+
+                synchronized(file) {
+                    newConfig.save(file)
+                }
+            } catch (e: Exception) {
+                logger.severe("Error saving player progress: ${e.message}")
+                e.printStackTrace()
             }
+        })
+    }
+    fun saveProgressToFileSync() {
+        try {
+            val newConfig = YamlConfiguration()
+
+            playerProgress.forEach { (playerId, tournamentProgress) ->
+                if (tournamentProgress.isEmpty()) return@forEach
+
+                tournamentProgress.forEach { (tournamentId, progress) ->
+                    newConfig.set("$playerId.$tournamentId", progress)
+                }
+            }
+
+            synchronized(file) {
+                newConfig.save(file)
+            }
+        } catch (e: Exception) {
+            logger.severe("Error saving player progress: ${e.message}")
+            e.printStackTrace()
         }
-        config.save(file)
-        logger.info("Player progress saved successfully")
     }
 
     fun getProgress(playerId: String, tournamentId: String): Int {
@@ -110,12 +141,16 @@ class PlayerProgress private constructor() {
                 return
             }
 
+        logger.info("Giving rewards for tournament: $tournamentName (target: ${tournament.target})")
+
         val config = YamlConfiguration.loadConfiguration(File("plugins/Tournament/tournaments.yml"))
         val inventoryItems = config.getList("tournaments.${tournament.name.replace(" ", "_").lowercase()}.inventory")?.filterIsInstance<ItemStack>()
             ?: run {
                 logger.warning("Tournament inventory is null or empty for $tournamentName")
                 return
             }
+
+        logger.info("Found ${inventoryItems.size} reward items for tournament $tournamentName")
 
         val rewardsManager = RewardsManager.getInstance()
 
@@ -124,72 +159,75 @@ class PlayerProgress private constructor() {
             val allPlayerProgress = getAllProgressForTournament(tournament.name)
 
             if (tournament.target == TournamentTarget.PROVINCE) {
+                logger.info("Processing PROVINCE rewards for tournament $tournamentName")
                 val kingdoms = getKingdoms()
-                val kingdomMembers = kingdoms.flatMap { kingdom -> getKingdomMembers(kingdom).map { it to kingdom } }.toMap()
-                val kingdomScores = mutableMapOf<String, Int>()
+                logger.info("Found ${kingdoms.size} kingdoms")
 
-                // Calculate kingdom scores
+                val kingdomMembers = kingdoms.flatMap { kingdom ->
+                    val members = kingdom.members.keys
+                    logger.info("Kingdom ${kingdom.name} has ${members.size} members")
+                    members.map { it to kingdom }
+                }.toMap()
+
+                val kingdomScores = mutableMapOf<Kingdom, Int>()
+
                 allPlayerProgress.forEach { (playerId, progress) ->
                     try {
                         val uuid = UUID.fromString(playerId)
                         val kingdom = kingdomMembers[uuid]
                         if (kingdom != null) {
                             kingdomScores[kingdom] = kingdomScores.getOrDefault(kingdom, 0) + progress
+                            logger.info("Added $progress points to kingdom $kingdom (total: ${kingdomScores[kingdom]})")
                         }
                     } catch (e: Exception) {
                         logger.warning("Error parsing player ID $playerId: ${e.message}")
                     }
                 }
 
-                // Sort kingdoms by score
                 val sortedKingdoms = kingdomScores.entries
                     .sortedByDescending { it.value }
                     .map { it.key to it.value }
 
-                // Add rewards for top kingdoms
+                logger.info("Sorted kingdoms by score: ${sortedKingdoms.joinToString { "${it.first}=${it.second}" }}")
+
                 sortedKingdoms.forEachIndexed { index, (kingdom, score) ->
-                    if (index < 5) { // Only top 5 get rewards
+                    if (index <= 5) {
                         val reward = RewardsManager.Reward(
                             score = score,
                             position = index,
                             levels = tournament.levels ?: 0,
                             items = ArrayList(inventoryItems),
-                            type = "provincie"
+                            type = "provincie",
+                            objectiveType = tournament.objective.type.name
                         )
 
-                        rewardsManager.addProvinceReward(kingdom, tournament.name, reward)
+                        logger.info("Adding province reward for kingdom $kingdom, tournament $tournamentName, score $score, position $index")
+                        val success = rewardsManager.addProvinceReward(kingdom, tournament.name, reward)
+                        logger.info("Province reward added successfully: $success")
 
-                        // Notify players in this kingdom
-                        getKingdomMembers(kingdom).forEach { memberId ->
+                        // Debug province rewards map after adding
+                        val rewardsMap = rewardsManager.getProvinceRewardsFor(kingdom)
+                        logger.info("Kingdom $kingdom now has ${rewardsMap?.size ?: 0} rewards")
+
+                        kingdom.members.keys.forEach { memberId ->
                             Bukkit.getPlayer(memberId)?.message(
-                                "<green>Gefeliciteerd! Je provincie $kingdom heeft de ${tournament.name} gewonnen met $score punten! " +
+                                "<green>Gefeliciteerd! Je provincie ${kingdom.name} heeft de ${tournament.name} gewonnen met $score punten! " +
                                         "Doe /tournament claimreward om je prijs te claimen."
                             )
                         }
                     }
                 }
-
-                // Notify players in kingdoms that didn't win
-                kingdoms.filter { it !in sortedKingdoms.take(5).map { it.first } }.forEach { kingdom ->
-                    getKingdomMembers(kingdom).forEach { memberId ->
-                        Bukkit.getPlayer(memberId)?.message(
-                            "<red>Helaas, je provincie heeft niet hoog genoeg gescoord in de ${tournament.name}. " +
-                                    "Probeer het volgende keer opnieuw!"
-                        )
-                    }
-                }
             } else {
-                // Add rewards for top players
                 topPlayers.forEachIndexed { index, (playerId, score) ->
-                    if (index < 5) { // Only top 5 get rewards
+                    if (index <= 5) {
                         val reward = RewardsManager.Reward(
                             score = score,
                             position = index,
                             levels = tournament.levels ?: 0,
                             items = ArrayList(inventoryItems),
-                            type = "player"
+                            type = "player",
+                            objectiveType = tournament.objective.type.name
                         )
-
                         rewardsManager.addPlayerReward(playerId, tournament.name, reward)
                         Bukkit.getPlayer(playerId)?.message(
                             "<green>Gefeliciteerd! Je hebt de ${tournament.name} gewonnen met $score punten! " +
@@ -198,7 +236,6 @@ class PlayerProgress private constructor() {
                     }
                 }
 
-                // Notify players that didn't win
                 allPlayerProgress.keys
                     .filter { UUID.fromString(it) !in topPlayerIds }
                     .forEach { playerId ->
@@ -210,18 +247,29 @@ class PlayerProgress private constructor() {
             }
         }
 
-        removePlayersFromTournament(tournament.name)
-    }
+        try {
+            logger.info("Saving rewards after tournament completion")
+            val rewardsManager = RewardsManager.getInstance()
 
+            rewardsManager.saveRewards()
+
+            logger.info("Rewards saved, now reloading from disk")
+            rewardsManager.loadRewards()
+
+            // Now remove the players from tournament
+            removePlayersFromTournament(tournament.name)
+        } catch (e: Exception) {
+            logger.severe("Error in reward processing: ${e.message}")
+            e.printStackTrace()
+        }
+    }
     fun removePlayersFromTournament(tournamentId: String) {
         logger.info("Removing all player progress for tournament: $tournamentId")
 
-        // Remove from memory
         playerProgress.forEach { (_, tournaments) ->
             tournaments.remove(tournamentId)
         }
 
-        // Clean up empty player entries
         val emptyPlayers = playerProgress.entries.filter { it.value.isEmpty() }
         emptyPlayers.forEach { playerProgress.remove(it.key) }
 

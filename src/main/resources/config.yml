@@ -1,10 +1,49 @@
-1-diamonds: 5
-1-eco: 5
-2-diamonds: 5
-2-eco: 5
-3-diamonds: 5
-3-eco: 5
-4-diamonds: 5
-4-eco: 5
-5-diamonds: 5
-5-eco: 5
+rewards:
+  MINE_BLOCK:
+    1:
+      diamonds: 10
+      eco: 1000
+    2:
+      diamonds: 8
+      eco: 800
+    3:
+      diamonds: 6
+      eco: 600
+    4:
+      diamonds: 4
+      eco: 400
+    5:
+      diamonds: 2
+      eco: 200
+  KILL_ENTITY:
+    1:
+      diamonds: 5
+      eco: 500
+    2:
+      diamonds: 4
+      eco: 400
+    3:
+      diamonds: 3
+      eco: 300
+    4:
+      diamonds: 2
+      eco: 200
+    5:
+      diamonds: 1
+      eco: 100
+  default:  # Fallback if objective type not specified
+    1:
+      diamonds: 5
+      eco: 500
+    2:
+      diamonds: 4
+      eco: 400
+    3:
+      diamonds: 3
+      eco: 300
+    4:
+      diamonds: 2
+      eco: 200
+    5:
+      diamonds: 1
+      eco: 100

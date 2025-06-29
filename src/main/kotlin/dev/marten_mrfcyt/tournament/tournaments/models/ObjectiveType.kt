@@ -1,22 +1,22 @@
 package dev.marten_mrfcyt.tournament.tournaments.models
 
 enum class ObjectiveType {
-    MINE_BLOCK,
-    KILL_ENTITY;
+    HAK_BLOK,
+    DOOD_MOB;
 
     companion object {
         fun fromString(value: String): ObjectiveType {
             return when (value.lowercase()) {
-                "mineblock" -> MINE_BLOCK
-                "killentity" -> KILL_ENTITY
+                "hak_block", "hak blok" -> HAK_BLOK
+                "dood_mob", "dood mob" -> DOOD_MOB
                 else -> throw IllegalArgumentException("Unknown objective type: $value")
             }
         }
 
         fun toString(type: ObjectiveType): String {
             return when (type) {
-                MINE_BLOCK -> "mineblock"
-                KILL_ENTITY -> "killentity"
+                HAK_BLOK -> "Hak Blok"
+                DOOD_MOB -> "Dood Mob"
             }
         }
     }

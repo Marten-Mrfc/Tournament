@@ -1,11 +1,19 @@
 package dev.marten_mrfcyt.tournament.utils
 
 import com.gufli.kingdomcraft.api.KingdomCraftProvider
-import java.util.UUID
+import com.gufli.kingdomcraft.api.domain.Kingdom
+import org.bukkit.Bukkit
 
-    fun getKingdoms(): List<String> {
-        return KingdomCraftProvider.get().kingdoms.map { it.name }
+fun getKingdoms(): Set<Kingdom> {
+    // Check if KingdomCraft is loaded before trying to access the API
+    if (Bukkit.getPluginManager().getPlugin("KingdomCraft") == null) {
+        throw IllegalStateException("KingdomCraft plugin is not loaded")
     }
-    fun getKingdomMembers(kingdom: String): List<UUID> {
-        return KingdomCraftProvider.get().kingdoms.find { it.name == kingdom }?.members?.map { it.key } ?: listOf()
+
+    return try {
+        KingdomCraftProvider.get().kingdoms
+    } catch (e: IllegalStateException) {
+        // Handle the case where the API isn't ready yet
+        emptySet()
     }
+}

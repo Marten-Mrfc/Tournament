@@ -73,8 +73,8 @@ private fun LiteralDSLBuilder.setup() {
                         argument("target", StringArgumentType.string()) {
                             suggests { builder ->
                                 when (getArgument("objectiveType", String::class.java)) {
-                                    ObjectiveType.MINE_BLOCK.name -> Material.entries.forEach { builder.suggest(it.name) }
-                                    ObjectiveType.KILL_ENTITY.name -> EntityType.entries.forEach { builder.suggest(it.name) }
+                                    ObjectiveType.HAK_BLOK.name -> Material.entries.forEach { builder.suggest(it.name) }
+                                    ObjectiveType.DOOD_MOB.name -> EntityType.entries.forEach { builder.suggest(it.name) }
                                 }
                                 builder.buildFuture()
                             }

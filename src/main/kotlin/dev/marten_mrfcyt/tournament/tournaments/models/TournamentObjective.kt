@@ -27,12 +27,14 @@ data class TournamentObjective(
 
     fun getDisplayName(): String {
         return when (type) {
-            ObjectiveType.MINE_BLOCK -> try {
+            ObjectiveType.HAK_BLOK -> try {
                 Material.valueOf(target).name.lowercase().replace("_", " ")
+                    .split(" ")
+                    .joinToString(" ") { word -> word.replaceFirstChar { it.uppercase() } }
             } catch (_: IllegalArgumentException) {
                 target
             }
-            ObjectiveType.KILL_ENTITY -> try {
+            ObjectiveType.DOOD_MOB -> try {
                 EntityType.valueOf(target).name.lowercase().replace("_", " ")
             } catch (_: IllegalArgumentException) {
                 target

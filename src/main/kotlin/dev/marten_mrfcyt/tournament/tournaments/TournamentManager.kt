@@ -1,10 +1,10 @@
 // src/main/kotlin/dev/marten_mrfcyt/tournament/tournaments/TournamentManager.kt
 package dev.marten_mrfcyt.tournament.tournaments
 
+import com.gufli.kingdomcraft.api.domain.Kingdom
 import dev.marten_mrfcyt.tournament.tournaments.models.Tournament
 import dev.marten_mrfcyt.tournament.tournaments.models.TournamentObjective
 import dev.marten_mrfcyt.tournament.tournaments.models.TournamentTarget
-import dev.marten_mrfcyt.tournament.utils.getKingdomMembers
 import dev.marten_mrfcyt.tournament.utils.getKingdoms
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -13,6 +13,7 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.inventory.Inventory
 import java.io.File
 import java.util.UUID
+import kotlin.collections.getOrDefault
 
 class TournamentManager {
     private val logger = dev.marten_mrfcyt.tournament.Tournament.instance.logger
@@ -99,16 +100,30 @@ class TournamentManager {
         return hashMapOf(*sortedPlayers.toTypedArray())
     }
 
-    fun getTopProvincies(tournamentName: String): HashMap<String, Int> {
+    fun getTopProvincies(tournamentName: String): HashMap<Kingdom, Int> {
         val playerProgress = PlayerProgress.getInstance().getAllProgressForTournament(tournamentName)
-        val sortedPlayers = playerProgress.entries
+
+        val provinceScores = mutableMapOf<Kingdom, Int>()
+
+        playerProgress.forEach { (playerId, progress) ->
+            try {
+                val playerUUID = UUID.fromString(playerId)
+                val province = getKingdoms().find { it.members.contains(playerUUID) }
+
+                if (province != null) {
+                    provinceScores[province] = provinceScores.getOrDefault(province, 0) + progress
+                }
+            } catch (e: Exception) {
+                logger.warning("Error processing player $playerId for tournament $tournamentName: ${e.message}")
+            }
+        }
+
+        val sortedProvinces = provinceScores.entries
             .sortedByDescending { it.value }
             .take(5)
-            .mapNotNull { (playerId, progress) ->
-                val province = getKingdoms().find { getKingdomMembers(it).contains(UUID.fromString(playerId)) }
-                if (province != null) province to progress else null
-            }
-        return hashMapOf(*sortedPlayers.toTypedArray())
+            .map { it.key to it.value }
+
+        return hashMapOf(*sortedProvinces.toTypedArray())
     }
 
     fun getActiveTournamentsByObjective(objectiveString: String): List<Tournament> {

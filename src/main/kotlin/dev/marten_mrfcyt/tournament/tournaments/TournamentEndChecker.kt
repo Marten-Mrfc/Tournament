@@ -27,7 +27,7 @@ class TournamentEndChecker(private val tournamentManager: TournamentManager) {
                     onTournamentEnd(tournament)
                 }
             } catch (e: Exception) {
-                println("Error processing tournament ${tournament.name}: ${e.message}")
+                dev.marten_mrfcyt.tournament.Tournament.instance.logger.severe("Error processing tournament ${tournament.name}: ${e.message}")
             }
         }
     }

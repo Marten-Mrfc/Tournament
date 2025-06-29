@@ -26,7 +26,7 @@ class TournamentHandler(private val tournamentManager: TournamentManager) : List
         val block = event.block
 
         val activeTournaments = tournamentManager.getTournaments().filter { tournament ->
-            tournament.objective.type == ObjectiveType.MINE_BLOCK &&
+            tournament.objective.type == ObjectiveType.HAK_BLOK &&
                     tournament.objective.target == block.type.name
         }
 
@@ -48,7 +48,7 @@ class TournamentHandler(private val tournamentManager: TournamentManager) : List
         if (killer is Player) {
             // Get active tournaments for killing this entity type
             val activeTournaments = tournamentManager.getTournaments().filter { tournament ->
-                tournament.objective.type == ObjectiveType.KILL_ENTITY &&
+                tournament.objective.type == ObjectiveType.DOOD_MOB &&
                         tournament.objective.target == entity.type.name
             }
 

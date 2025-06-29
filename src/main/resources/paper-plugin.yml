@@ -9,8 +9,9 @@ description: A commision for RepublicMC for a tournament plugin
 dependencies:
   server:
     KingdomCraft:
-      load: OMIT
+      load: BEFORE
       required: true
+      join-classpath: true
     Essentials:
       load: OMIT
       required: true
